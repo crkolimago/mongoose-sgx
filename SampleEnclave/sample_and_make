@@ -1,0 +1,5 @@
+#!/bin/bash
+
+source ~/linux-sgx/linux/installer/bin/sgxsdk/environment
+
+make SGX_MODE=SIM
