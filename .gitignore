@@ -1,0 +1,16 @@
+# Ignore all
+*
+
+# Unignore all with extensions
+!*.*
+
+# Unignore all dirs
+!*/
+
+##############
+
+# Object files
+*.o
+
+# Shared object files
+*.so
