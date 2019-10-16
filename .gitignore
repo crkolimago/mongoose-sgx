@@ -1,1 +1,27 @@
+### Ignore binary files
 
+# ignore all files
+*
+
+# unignore directories
+!*/
+
+# unignore files with extensions
+!*.*
+
+### Exceptions for non-extension files
+
+# unignore grep?
+grep
+
+# unignore Makefile
+Makefile
+
+# object files
+*.o
+
+# shared object files
+*.so
+
+# key files
+*.pem
