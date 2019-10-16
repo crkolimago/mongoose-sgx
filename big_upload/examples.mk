@@ -1,5 +1,5 @@
-SOURCES = $(PROG).c ../../mongoose.c
-CFLAGS = -g -W -Wall -Werror -I../.. -Wno-unused-function $(CFLAGS_EXTRA) $(MODULE_CFLAGS)
+SOURCES = $(PROG).c ../../mongoose/mongoose.c
+CFLAGS = -g -W -Wall -Werror -I../../mongoose -Wno-unused-function $(CFLAGS_EXTRA) $(MODULE_CFLAGS)
 
 all: $(PROG)
 
@@ -30,7 +30,7 @@ $(PROG): $(SOURCES)
 	$(CC) $(SOURCES) -o $@ $(CFLAGS)
 
 $(PROG).exe: $(SOURCES)
-	cl $(SOURCES) /I../.. /MD /Fe$@
+	cl $(SOURCES) /I../../mongoose /MD /Fe$@
 
 clean:
 	rm -rf *.gc* *.dSYM *.exe *.obj *.o a.out $(PROG)
