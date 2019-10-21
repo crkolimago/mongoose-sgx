@@ -30,6 +30,8 @@ static void handle_upload(struct mg_connection *nc, int ev, void *p) {
       break;
     }
     case MG_EV_HTTP_PART_DATA: {
+      // this is where the actual data is processed
+
       data->bytes_written += mp->data.len;
 
       break;
@@ -53,6 +55,7 @@ static void ev_handler(struct mg_connection *nc, int ev, void *ev_data) {
   if (ev == MG_EV_HTTP_REQUEST) {
     struct http_message *hm = (struct http_message *) ev_data;
 
+    // logging information
     printf("%p: %.*s %.*s\r\n", nc, (int) hm->method.len, hm->method.p,
              (int) hm->uri.len, hm->uri.p);
 
