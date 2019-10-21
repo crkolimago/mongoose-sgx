@@ -1,8 +1,14 @@
 # mongoose-sgx
 
 ### Step 1.
-- get big upload working without filesystem but with http multipart support
-- test using `curl -F data=@file.txt localhost:8000/upload`
+- [x] get big upload working without filesystem but with http multipart support
+- ~~test using `curl -F data=@file.txt localhost:8000/upload`~~
+- simple upload endpoint form working (open localhost:8000 in browser)
+
+### Step 2.
+- [ ] processing large multipart data
+- initial search says that most likely will need to be done on client side
+- *incorporate index.html AJAX*
 
 ### Compile flags
 
