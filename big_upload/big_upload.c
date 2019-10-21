@@ -83,14 +83,91 @@ static void handle_upload(struct mg_connection *nc, int ev, void *p) {
 
 static void ev_handler(struct mg_connection *nc, int ev, void *ev_data) {
   if (ev == MG_EV_HTTP_REQUEST) {
-    // mg_serve_http(nc, ev_data, s_http_server_opts);
-
     struct http_message *hm = (struct http_message *) ev_data;
 
-    // We have received an HTTP request. Parsed request is contained in `hm`.
-    // Send HTTP reply to the client which shows full original request.
-    mg_send_head(nc, 200, hm->message.len, "Content-Type: text/plain");
-    mg_printf(nc, "%.*s", (int)hm->message.len, hm->message.p);
+    printf("%p: %.*s %.*s\r\n", nc, (int) hm->method.len, hm->method.p,
+             (int) hm->uri.len, hm->uri.p);
+
+    mg_send_response_line(nc, 200,
+                            "Content-Type: text/html\r\n"
+                            "Connection: close");
+    mg_printf(nc,
+              "\r\n<form method='POST' action='/upload' enctype='multipart/form-data'>"
+              "<input type='file' name='file'>"
+              "<input type='submit' value='Upload'>"
+              "</form>\r\n");
+
+    nc->flags |= MG_F_SEND_AND_CLOSE;
+
+    /* Additional Error Checking not handled !!!!
+    
+    // mg_serve_http(nc, ev_data, s_http_server_opts);
+
+    void mg_serve_http(struct mg_connection *nc, struct http_message *hm,
+                      struct mg_serve_http_opts opts) {
+      char *path = NULL;
+      struct mg_str *hdr, path_info;
+      uint32_t remote_ip = ntohl(*(uint32_t *) &nc->sa.sin.sin_addr);
+
+      if (mg_check_ip_acl(opts.ip_acl, remote_ip) != 1) {
+        // Not allowed to connect
+        mg_http_send_error(nc, 403, NULL);
+        nc->flags |= MG_F_SEND_AND_CLOSE;
+        return;
+      }
+
+    #if MG_ENABLE_HTTP_URL_REWRITES
+      if (mg_http_handle_forwarding(nc, hm, &opts)) {
+        return;
+      }
+
+      if (mg_http_send_port_based_redirect(nc, hm, &opts)) {
+        return;
+      }
+    #endif
+
+      if (opts.document_root == NULL) {
+        opts.document_root = ".";
+      }
+      if (opts.per_directory_auth_file == NULL) {
+        opts.per_directory_auth_file = ".htpasswd";
+      }
+      if (opts.enable_directory_listing == NULL) {
+        opts.enable_directory_listing = "yes";
+      }
+      if (opts.cgi_file_pattern == NULL) {
+        opts.cgi_file_pattern = "**.cgi$|**.php$";
+      }
+      if (opts.ssi_pattern == NULL) {
+        opts.ssi_pattern = "**.shtml$|**.shtm$";
+      }
+      if (opts.index_files == NULL) {
+        opts.index_files = "index.html,index.htm,index.shtml,index.cgi,index.php";
+      }
+      // Normalize path - resolve "." and ".." (in-place). 
+      if (!mg_normalize_uri_path(&hm->uri, &hm->uri)) {
+        mg_http_send_error(nc, 400, NULL);
+        return;
+      }
+      if (mg_uri_to_local_path(hm, &opts, &path, &path_info) == 0) {
+        mg_http_send_error(nc, 404, NULL);
+        return;
+      }
+      mg_send_http_file(nc, path, &path_info, hm, &opts);
+
+      MG_FREE(path);
+      path = NULL;
+
+      // Close connection for non-keep-alive requests 
+      if (mg_vcmp(&hm->proto, "HTTP/1.1") != 0 ||
+          ((hdr = mg_get_http_header(hm, "Connection")) != NULL &&
+          mg_vcmp(hdr, "keep-alive") != 0)) {
+    #if 0
+        nc->flags |= MG_F_SEND_AND_CLOSE;
+    #endif
+      }
+    }
+    */
   }
 }
 
