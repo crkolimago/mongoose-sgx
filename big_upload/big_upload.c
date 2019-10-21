@@ -10,10 +10,10 @@
 #include "mongoose.h"
 
 static const char *s_http_port = "8000";
-static struct mg_serve_http_opts s_http_server_opts;
+// static struct mg_serve_http_opts s_http_server_opts;
 
 struct file_writer_data {
-  FILE *fp;
+  // FILE *fp;
   size_t bytes_written;
 };
 
@@ -25,9 +25,10 @@ static void handle_upload(struct mg_connection *nc, int ev, void *p) {
     case MG_EV_HTTP_PART_BEGIN: {
       if (data == NULL) {
         data = calloc(1, sizeof(struct file_writer_data));
-        data->fp = tmpfile();
+        // data->fp = tmpfile();
         data->bytes_written = 0;
 
+        /*
         if (data->fp == NULL) {
           mg_printf(nc, "%s",
                     "HTTP/1.1 500 Failed to open a file\r\n"
@@ -36,11 +37,13 @@ static void handle_upload(struct mg_connection *nc, int ev, void *p) {
           free(data);
           return;
         }
+        */
         nc->user_data = (void *) data;
       }
       break;
     }
     case MG_EV_HTTP_PART_DATA: {
+      /*
       if (fwrite(mp->data.p, 1, mp->data.len, data->fp) != mp->data.len) {
         mg_printf(nc, "%s",
                   "HTTP/1.1 500 Failed to write to a file\r\n"
@@ -48,10 +51,13 @@ static void handle_upload(struct mg_connection *nc, int ev, void *p) {
         nc->flags |= MG_F_SEND_AND_CLOSE;
         return;
       }
+      */
       data->bytes_written += mp->data.len;
+
       break;
     }
     case MG_EV_HTTP_PART_END: {
+      /*
       mg_printf(nc,
                 "HTTP/1.1 200 OK\r\n"
                 "Content-Type: text/plain\r\n"
@@ -60,6 +66,14 @@ static void handle_upload(struct mg_connection *nc, int ev, void *p) {
                 (long) ftell(data->fp));
       nc->flags |= MG_F_SEND_AND_CLOSE;
       fclose(data->fp);
+      */
+      mg_printf(nc,
+                "HTTP/1.1 200 OK\r\n"
+                "Content-Type: text/plain\r\n"
+                "Connection: close\r\n\r\n"
+                "Received %ld bytes of POST data\n\n",
+                data->bytes_written);
+      nc->flags |= MG_F_SEND_AND_CLOSE;
       free(data);
       nc->user_data = NULL;
       break;
@@ -69,7 +83,14 @@ static void handle_upload(struct mg_connection *nc, int ev, void *p) {
 
 static void ev_handler(struct mg_connection *nc, int ev, void *ev_data) {
   if (ev == MG_EV_HTTP_REQUEST) {
-    mg_serve_http(nc, ev_data, s_http_server_opts);
+    // mg_serve_http(nc, ev_data, s_http_server_opts);
+
+    struct http_message *hm = (struct http_message *) ev_data;
+
+    // We have received an HTTP request. Parsed request is contained in `hm`.
+    // Send HTTP reply to the client which shows full original request.
+    mg_send_head(nc, 200, hm->message.len, "Content-Type: text/plain");
+    mg_printf(nc, "%.*s", (int)hm->message.len, hm->message.p);
   }
 }
 
@@ -84,7 +105,7 @@ int main(void) {
     exit(EXIT_FAILURE);
   }
 
-  s_http_server_opts.document_root = ".";  // Serve current directory
+  // s_http_server_opts.document_root = ".";  // Serve current directory
   mg_register_http_endpoint(c, "/upload", handle_upload MG_UD_ARG(NULL));
 
   // Set up HTTP server parameters
