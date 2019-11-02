@@ -9,6 +9,7 @@
 - [ ] processing large multipart data
 - initial search says that most likely will need to be done on client side
 - *incorporate index.html AJAX*
+- setup basic https://github.com/blueimp/jQuery-File-Upload/wiki/Basic-plugin
 
 ### Issues:
 - Jerry-rigging mg_serve_http() is far too hard; just going to write a dummy read from file mg_send loop with **minimal error checking**
