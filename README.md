@@ -10,6 +10,9 @@
 - initial search says that most likely will need to be done on client side
 - *incorporate index.html AJAX*
 
+### Issues:
+- Jerry-rigging mg_serve_http() is far too hard; just going to write a dummy read from file mg_send loop with **minimal error checking**
+
 ### Compile flags
 
 CS_ENABLE_STDIO=0

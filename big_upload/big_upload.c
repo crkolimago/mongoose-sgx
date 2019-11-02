@@ -9,11 +9,54 @@
 #include <stdlib.h>
 #include "mongoose.h"
 
+#define FILE_OK 0
+#define FILE_NOT_EXIST 1
+#define FILE_TO_LARGE 2
+#define FILE_READ_ERROR 3
+
 static const char *s_http_port = "8000";
 
 struct file_writer_data {
   size_t bytes_written;
 };
+
+char * c_read_file(const char * f_name, int * err, size_t * f_size) {
+    char * buffer;
+    size_t length;
+    FILE * f = fopen(f_name, "rb");
+    size_t read_length;
+
+    if (f) {
+        fseek(f, 0, SEEK_END);
+        length = ftell(f);
+        fseek(f, 0, SEEK_SET);
+
+        buffer = (char *)malloc(length + 1);
+
+        if (length) {
+            read_length = fread(buffer, 1, length, f);
+
+            if (length != read_length) {
+                 *err = FILE_READ_ERROR;
+
+                 return NULL;
+            }
+        }
+
+        fclose(f);
+
+        *err = FILE_OK;
+        buffer[length] = '\0';
+        *f_size = length;
+    }
+    else {
+        *err = FILE_NOT_EXIST;
+
+        return NULL;
+    }
+
+    return buffer;
+}
 
 static void handle_upload(struct mg_connection *nc, int ev, void *p) {
   struct file_writer_data *data = (struct file_writer_data *) nc->user_data;
@@ -55,6 +98,21 @@ static void ev_handler(struct mg_connection *nc, int ev, void *ev_data) {
   if (ev == MG_EV_HTTP_REQUEST) {
     struct http_message *hm = (struct http_message *) ev_data;
 
+    // We have received an HTTP request. Parsed request is contained in `hm`.
+    // Send HTTP reply to the client which shows full original request.
+    mg_send_head(nc, 200, hm->message.len, "Content-Type: text/plain");
+    mg_printf(nc, "%.*s", (int)hm->message.len, hm->message.p);
+  }
+
+  /*
+  int err;
+  size_t f_size;
+  char * f_data;
+
+  // GET REQUEST - SERVE INDEX
+  if (ev == MG_EV_HTTP_REQUEST) {
+    struct http_message *hm = (struct http_message *) ev_data;
+
     // logging information
     printf("%p: %.*s %.*s\r\n", nc, (int) hm->method.len, hm->method.p,
              (int) hm->uri.len, hm->uri.p);
@@ -62,84 +120,28 @@ static void ev_handler(struct mg_connection *nc, int ev, void *ev_data) {
     mg_send_response_line(nc, 200,
                             "Content-Type: text/html\r\n"
                             "Connection: close");
-    mg_printf(nc,
-              "\r\n<form method='POST' action='/upload' enctype='multipart/form-data'>"
-              "<input type='file' name='file'>"
-              "<input type='submit' value='Upload'>"
-              "</form>\r\n");
+
+    f_data = c_read_file("index.html", &err, &f_size);
+
+    if (err) {
+        // process error
+    }
+
+    mg_printf(nc, "%s", f_data);
+
+    free(f_data);
 
     nc->flags |= MG_F_SEND_AND_CLOSE;
-
-    /* Additional Error Checking not handled !!!!
-    
-    // mg_serve_http(nc, ev_data, s_http_server_opts);
-
-    void mg_serve_http(struct mg_connection *nc, struct http_message *hm,
-                      struct mg_serve_http_opts opts) {
-      char *path = NULL;
-      struct mg_str *hdr, path_info;
-      uint32_t remote_ip = ntohl(*(uint32_t *) &nc->sa.sin.sin_addr);
-
-      if (mg_check_ip_acl(opts.ip_acl, remote_ip) != 1) {
-        // Not allowed to connect
-        mg_http_send_error(nc, 403, NULL);
-        nc->flags |= MG_F_SEND_AND_CLOSE;
-        return;
-      }
-
-    #if MG_ENABLE_HTTP_URL_REWRITES
-      if (mg_http_handle_forwarding(nc, hm, &opts)) {
-        return;
-      }
-
-      if (mg_http_send_port_based_redirect(nc, hm, &opts)) {
-        return;
-      }
-    #endif
-
-      if (opts.document_root == NULL) {
-        opts.document_root = ".";
-      }
-      if (opts.per_directory_auth_file == NULL) {
-        opts.per_directory_auth_file = ".htpasswd";
-      }
-      if (opts.enable_directory_listing == NULL) {
-        opts.enable_directory_listing = "yes";
-      }
-      if (opts.cgi_file_pattern == NULL) {
-        opts.cgi_file_pattern = "**.cgi$|**.php$";
-      }
-      if (opts.ssi_pattern == NULL) {
-        opts.ssi_pattern = "**.shtml$|**.shtm$";
-      }
-      if (opts.index_files == NULL) {
-        opts.index_files = "index.html,index.htm,index.shtml,index.cgi,index.php";
-      }
-      // Normalize path - resolve "." and ".." (in-place). 
-      if (!mg_normalize_uri_path(&hm->uri, &hm->uri)) {
-        mg_http_send_error(nc, 400, NULL);
-        return;
-      }
-      if (mg_uri_to_local_path(hm, &opts, &path, &path_info) == 0) {
-        mg_http_send_error(nc, 404, NULL);
-        return;
-      }
-      mg_send_http_file(nc, path, &path_info, hm, &opts);
-
-      MG_FREE(path);
-      path = NULL;
-
-      // Close connection for non-keep-alive requests 
-      if (mg_vcmp(&hm->proto, "HTTP/1.1") != 0 ||
-          ((hdr = mg_get_http_header(hm, "Connection")) != NULL &&
-          mg_vcmp(hdr, "keep-alive") != 0)) {
-    #if 0
-        nc->flags |= MG_F_SEND_AND_CLOSE;
-    #endif
-      }
-    }
     */
-  }
+
+    /* Reversing mg_serve_http:
+    * mg_http_serve_file2
+    * mg_http_serve_file [complicated]
+    * mg_fopen (fopen(path, "rb") but with extra stuff for windows directory)
+    * mg_http_transfer_file_data
+    * Note: this has proved to be a very challenging task without filesystem support so going
+    * to use a loop just to get serving files working
+    * */
 }
 
 int main(void) {

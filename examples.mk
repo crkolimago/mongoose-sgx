@@ -1,5 +1,5 @@
-SOURCES = $(PROG).c ../../mongoose.c
-CFLAGS = -g -W -Wall -Werror -I../.. -Wno-unused-function $(CFLAGS_EXTRA) $(MODULE_CFLAGS)
+SOURCES = $(PROG).c ../mongoose/mongoose.c
+CFLAGS = -g -W -Wall -Werror -I../mongoose -Wno-unused-function $(CFLAGS_EXTRA) $(MODULE_CFLAGS)
 
 all: $(PROG)
 
@@ -15,7 +15,7 @@ ifeq ($(SSL_LIB),openssl)
 CFLAGS += -DMG_ENABLE_SSL -lssl -lcrypto
 endif
 ifeq ($(SSL_LIB), krypton)
-CFLAGS += -DMG_ENABLE_SSL ../../../krypton/krypton.c -I../../../krypton
+CFLAGS += -DMG_ENABLE_SSL ../mongoose/../krypton/krypton.c -I../mongoose/../krypton
 endif
 ifeq ($(SSL_LIB),mbedtls)
 CFLAGS += -DMG_ENABLE_SSL -DMG_SSL_IF=MG_SSL_IF_MBEDTLS -DMG_SSL_MBED_DUMMY_RANDOM -lmbedcrypto -lmbedtls -lmbedx509
@@ -30,7 +30,7 @@ $(PROG): $(SOURCES)
 	$(CC) $(SOURCES) -o $@ $(CFLAGS)
 
 $(PROG).exe: $(SOURCES)
-	cl $(SOURCES) /I../.. /MD /Fe$@
+	cl $(SOURCES) /I../mongoose /MD /Fe$@
 
 clean:
 	rm -rf *.gc* *.dSYM *.exe *.obj *.o a.out $(PROG)

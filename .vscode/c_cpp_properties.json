@@ -3,13 +3,26 @@
         {
             "name": "Linux",
             "includePath": [
-                "/home/kchris/mongoose-sgx/linux-sgx/**"
+                "/home/chris/mongoose-sgx/**"
             ],
             "defines": [],
-            "compilerPath": "/usr/bin/gcc",
+            "compilerPath": "/usr/bin/g++",
             "cStandard": "c11",
             "cppStandard": "c++17",
-            "intelliSenseMode": "clang-x64"
+            "intelliSenseMode": "gcc-x64",
+            "compilerArgs": [
+                "CS_ENABLE_STDIO=0",
+                "MG_ENABLE_BROADCAST=0",
+                "MG_ENAGLE_DIRECTORY_LISTING=0",
+                "MG_ENABLE_FILESYSTEM=0",
+                "MG_ENABLE_HTTP_CGI=0",
+                "MG_ENABLE_GETADDRINFO=0",
+                "MG_ENABLE_SYNC_RESOLVER=0",
+                "MG_ENABLE_ASYNC_RESOLVER=0",
+                "MG_ENABLE_SNTP=0",
+                "MG_ENABLE_MQTT=0",
+                "MG_ENABLE_HTTP_STREAMING_MULTIPART=1"
+            ]
         }
     ],
     "version": 4
