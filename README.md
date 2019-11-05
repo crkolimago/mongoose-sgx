@@ -6,13 +6,15 @@
 - simple upload endpoint form working (open localhost:8000 in browser)
 
 ### Step 2.
+- [x] configure axios for get and post
+- run `live-server` in frontend/
+
+### Step 3.
 - [ ] processing large multipart data
-- initial search says that most likely will need to be done on client side
-- *incorporate index.html AJAX*
-- setup basic https://github.com/blueimp/jQuery-File-Upload/wiki/Basic-plugin
+- potential avenue https://github.com/blueimp/jQuery-File-Upload/wiki/Basic-plugin
 
 ### Issues:
-- Jerry-rigging mg_serve_http() is far too hard; just going to write a dummy read from file mg_send loop with **minimal error checking**
+- Servicing get requests without file system is too advances -- using node fronten
 
 ### Compile flags
 

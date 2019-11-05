@@ -80,6 +80,10 @@ void debug_value(int ev) {
       printf("%s\n", "MG_EV_HTTP_MULTIPART_REQUEST_END");
       break;
     }
+    case MG_EV_HTTP_REQUEST: {
+      printf("%s\n", "MG_EV_HTTP_REQUEST");
+      break;
+    }
     default: {
       printf("%d (add to logging information)\n", ev);
       break;
@@ -94,7 +98,7 @@ static void handle_upload(struct mg_connection *nc, int ev, void *p) {
   // im guessing this is super unsafe but for debugging purposes
   if ((void *)mp) {
     if (mp->status < 0) {
-      printf("REQUEST:\n%s\n",mp->file_name);
+      printf("REQUEST:----------\n%s\n----------\n",mp->file_name);
     }
   }
 
@@ -115,6 +119,7 @@ static void handle_upload(struct mg_connection *nc, int ev, void *p) {
     case MG_EV_HTTP_PART_DATA: {
       // this is where the actual data is processed
 
+      printf("data_length: %ld\n", mp->data.len);
       data->bytes_written += mp->data.len;
 
       break;
@@ -140,6 +145,9 @@ static void handle_upload(struct mg_connection *nc, int ev, void *p) {
       free(data);
       nc->user_data = NULL;
       break;
+    }
+    case MG_EV_HTTP_REQUEST: {
+      printf("todo: handle request\n");
     }
   }
 }
