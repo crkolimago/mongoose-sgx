@@ -62,6 +62,36 @@ static void handle_upload(struct mg_connection *nc, int ev, void *p) {
   struct file_writer_data *data = (struct file_writer_data *) nc->user_data;
   struct mg_http_multipart_part *mp = (struct mg_http_multipart_part *) p;
 
+  // logging information
+  printf("%p: POST /upload ", nc);
+  
+  switch (ev) {
+    case MG_EV_HTTP_MULTIPART_REQUEST: {
+      printf("%s\n", "MG_EV_HTTP_MULTIPART");
+      break;
+    }
+    case MG_EV_HTTP_PART_BEGIN: {
+      printf("%s\n", "MG_EV_HTTP_PART_BEGIN");
+      break;
+    }
+    case MG_EV_HTTP_PART_DATA: {
+      printf("%s\n", "MG_EV_HTTP_PART_DATA");
+      break;
+    }
+    case MG_EV_HTTP_PART_END: {
+      printf("%s\n", "MG_EV_HTTP_PART_END");
+      break;
+    }
+    case MG_EV_HTTP_MULTIPART_REQUEST_END: {
+      printf("%s\n", "MG_EV_HTTP_MULTIPART_REQUEST_END");
+      break;
+    }
+    default: {
+      printf("%d (add to logging information)\n", ev);
+      break;
+    }
+  }
+
   switch (ev) {
     case MG_EV_HTTP_PART_BEGIN: {
       if (data == NULL) {
@@ -83,8 +113,9 @@ static void handle_upload(struct mg_connection *nc, int ev, void *p) {
       mg_printf(nc,
                 "HTTP/1.1 200 OK\r\n"
                 "Content-Type: text/plain\r\n"
+                "Access-Control-Allow-Origin: *\r\n"
                 "Connection: close\r\n\r\n"
-                "Received %ld bytes of POST data\n\n",
+                "Received %ld bytes of POST data\r\n\r\n",
                 data->bytes_written);
       nc->flags |= MG_F_SEND_AND_CLOSE;
       free(data);
@@ -95,16 +126,22 @@ static void handle_upload(struct mg_connection *nc, int ev, void *p) {
 }
 
 static void ev_handler(struct mg_connection *nc, int ev, void *ev_data) {
+  /*
   if (ev == MG_EV_HTTP_REQUEST) {
     struct http_message *hm = (struct http_message *) ev_data;
 
     // We have received an HTTP request. Parsed request is contained in `hm`.
     // Send HTTP reply to the client which shows full original request.
-    mg_send_head(nc, 200, hm->message.len, "Content-Type: text/plain");
+    mg_send_head(nc, 200, hm->message.len,
+    "Content-Type: text/plain\r\n"
+    "Access-Control-Allow-Origin: http://127.0.0.1:8080"
+    );
+    printf("%.*s", (int)hm->message.len, hm->message.p);
     mg_printf(nc, "%.*s", (int)hm->message.len, hm->message.p);
   }
+  */
+ 
 
-  /*
   int err;
   size_t f_size;
   char * f_data;
@@ -132,7 +169,8 @@ static void ev_handler(struct mg_connection *nc, int ev, void *ev_data) {
     free(f_data);
 
     nc->flags |= MG_F_SEND_AND_CLOSE;
-    */
+
+  }
 
     /* Reversing mg_serve_http:
     * mg_http_serve_file2
