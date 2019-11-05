@@ -58,16 +58,10 @@ char * c_read_file(const char * f_name, int * err, size_t * f_size) {
     return buffer;
 }
 
-static void handle_upload(struct mg_connection *nc, int ev, void *p) {
-  struct file_writer_data *data = (struct file_writer_data *) nc->user_data;
-  struct mg_http_multipart_part *mp = (struct mg_http_multipart_part *) p;
-
-  // logging information
-  printf("%p: POST /upload ", nc);
-  
+void debug_value(int ev) {
   switch (ev) {
     case MG_EV_HTTP_MULTIPART_REQUEST: {
-      printf("%s\n", "MG_EV_HTTP_MULTIPART");
+      printf("%s\n", "MG_EV_HTTP_MULTIPART_REQUEST");
       break;
     }
     case MG_EV_HTTP_PART_BEGIN: {
@@ -91,6 +85,22 @@ static void handle_upload(struct mg_connection *nc, int ev, void *p) {
       break;
     }
   }
+}
+
+static void handle_upload(struct mg_connection *nc, int ev, void *p) {
+  struct file_writer_data *data = (struct file_writer_data *) nc->user_data;
+  struct mg_http_multipart_part *mp = (struct mg_http_multipart_part *) p;
+
+  // im guessing this is super unsafe but for debugging purposes
+  if ((void *)mp) {
+    if (mp->status < 0) {
+      printf("REQUEST:\n%s\n",mp->file_name);
+    }
+  }
+
+  // logging information
+  printf("%p: POST /upload ", nc);
+  debug_value(ev);
 
   switch (ev) {
     case MG_EV_HTTP_PART_BEGIN: {
@@ -110,13 +120,22 @@ static void handle_upload(struct mg_connection *nc, int ev, void *p) {
       break;
     }
     case MG_EV_HTTP_PART_END: {
+      /* Send headers */
+      //mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+
+      /* Compute the result and send it back as a JSON object */
+      //result = strtod(n1, NULL) + strtod(n2, NULL);
+      //mg_printf_http_chunk(nc, "{ \"result\": %lf }", result);
+      //mg_send_http_chunk(nc, "", 0); /* Send empty chunk, the end of response */
+
+      
       mg_printf(nc,
                 "HTTP/1.1 200 OK\r\n"
                 "Content-Type: text/plain\r\n"
-                "Access-Control-Allow-Origin: *\r\n"
                 "Connection: close\r\n\r\n"
                 "Received %ld bytes of POST data\r\n\r\n",
                 data->bytes_written);
+      
       nc->flags |= MG_F_SEND_AND_CLOSE;
       free(data);
       nc->user_data = NULL;
