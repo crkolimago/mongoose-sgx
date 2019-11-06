@@ -84,6 +84,10 @@ void debug_value(int ev) {
       printf("%s\n", "MG_EV_HTTP_REQUEST");
       break;
     }
+    case MG_EV_CLOSE: {
+      printf("%s\n", "MG_EV_CLOSE");
+      break;
+    }
     default: {
       printf("%d (add to logging information)\n", ev);
       break;
@@ -91,6 +95,77 @@ void debug_value(int ev) {
   }
 }
 
+static void handle_upload(struct mg_connection *nc, int ev, void *p) {
+  struct http_message *hm = (struct http_message *) p;
+
+  // logging information
+  printf("%p: ", nc);
+  debug_value(ev);
+
+  // printf("%.*s\n", (int)hm->method.len, hm->method.p);
+
+  switch (ev) {
+    case MG_EV_HTTP_REQUEST: {
+      printf("%.*s", (int)hm->message.len, hm->message.p);
+
+      if (!mg_vcmp(&hm->method, "OPTIONS")) {
+        mg_send_response_line(nc, 200, NULL);
+        mg_printf(nc, "%s",
+                  "Access-Control-Allow-Origin: *\r\n"
+                  "Access-Control-Allow-Headers: content-disposition,content-type\r\n"
+                  "Allow: GET, POST, HEAD, CONNECT, OPTIONS"
+                  "\r\n\r\n");
+        nc->flags |= MG_F_SEND_AND_CLOSE;
+      } else {
+        /* Send headers */
+        //mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\nTransfer-Encoding: chunked\r\n\r\n");
+
+        /* Compute the result and send it back as a JSON object */
+        //mg_printf_http_chunk(nc, "{ \"result\": success }");
+        //mg_send_http_chunk(nc, "", 0); /* Send empty chunk, the end of response */
+
+
+        // struct mg_str *cd_hdr = mg_get_http_header(hm, "Content-Disposition");
+        // printf("%.*s\n", (int)cd_hdr->len, cd_hdr->p);
+
+        // struct mg_str *cl_hdr = mg_get_http_header(hm, "Content-Length");
+        // printf("%.*s\n", (int)cl_hdr->len, cl_hdr->p);
+
+        mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\nContent-Type: application/json\r\n\r\n");
+
+        printf(
+        "{\"files\":[{"
+        "\"name\":\"31tvcol-greatpumpkin-articleLarge.jpg\","
+        "\"size\":40496,"
+        "\"url\":\"http://example.org/files/picture1.jpg\","
+        "\"thumbnailUrl\":\"http://example.org/files/picture1.jpg\","
+        "\"deleteUrl\":\"http://example.org/files/picture1.jpg\","
+        "\"deleteType\":\"DELETE\""
+        "}]}\n"
+        );
+
+        mg_printf(nc,
+        "{\"files\":[{"
+        "\"name\":\"31tvcol-greatpumpkin-articleLarge.jpg\","
+        "\"size\":40496,"
+        "\"url\":\"http://example.org/files/picture1.jpg\","
+        "\"thumbnailUrl\":\"http://example.org/files/picture1.jpg\","
+        "\"deleteUrl\":\"http://example.org/files/picture1.jpg\","
+        "\"deleteType\":\"DELETE\""
+        "}]}");
+
+        nc->flags |= MG_F_SEND_AND_CLOSE;
+        
+      }
+
+      break;
+    }
+  }
+}
+
+// look at mg_http_parse_range_header
+
+/*
 static void handle_upload(struct mg_connection *nc, int ev, void *p) {
   struct file_writer_data *data = (struct file_writer_data *) nc->user_data;
   struct mg_http_multipart_part *mp = (struct mg_http_multipart_part *) p;
@@ -103,7 +178,7 @@ static void handle_upload(struct mg_connection *nc, int ev, void *p) {
   }
 
   // logging information
-  printf("%p: POST /upload ", nc);
+  printf("%p: ", nc);
   debug_value(ev);
 
   switch (ev) {
@@ -125,13 +200,11 @@ static void handle_upload(struct mg_connection *nc, int ev, void *p) {
       break;
     }
     case MG_EV_HTTP_PART_END: {
-      /* Send headers */
       //mg_printf(nc, "%s", "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
 
-      /* Compute the result and send it back as a JSON object */
       //result = strtod(n1, NULL) + strtod(n2, NULL);
       //mg_printf_http_chunk(nc, "{ \"result\": %lf }", result);
-      //mg_send_http_chunk(nc, "", 0); /* Send empty chunk, the end of response */
+      //mg_send_http_chunk(nc, "", 0);
 
       
       mg_printf(nc,
@@ -147,10 +220,19 @@ static void handle_upload(struct mg_connection *nc, int ev, void *p) {
       break;
     }
     case MG_EV_HTTP_REQUEST: {
-      printf("todo: handle request\n");
+      struct http_message *hm = (struct http_message *) p;
+
+      // We have received an HTTP request. Parsed request is contained in `hm`.
+      // Send HTTP reply to the client which shows full original request.
+      mg_send_head(nc, 200, hm->message.len,
+      "Content-Type: text/plain"
+      );
+      printf("%.*s", (int)hm->message.len, hm->message.p);
+      mg_printf(nc, "%.*s", (int)hm->message.len, hm->message.p);
     }
   }
 }
+*/
 
 static void ev_handler(struct mg_connection *nc, int ev, void *ev_data) {
   /*

@@ -7,7 +7,7 @@
 </head>
 
 <body>
-    <input id="fileupload" type="file" name="files[]" data-url="/upload" multiple>
+    <input id="fileupload" type="file" name="files[]" data-url="http://localhost:8000/upload" multiple>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
     <script src="node_modules/blueimp-file-upload/js/vendor/jquery.ui.widget.js"></script>
     <script src="node_modules/blueimp-file-upload/js/jquery.iframe-transport.js"></script>
@@ -16,7 +16,8 @@
         $(function () {
             $('#fileupload').fileupload({
                 dataType: 'json',
-                forceIframeTransport: 'true',
+                multipart: false,
+                // maxChunkSize: 1000,
                 done: function (e, data) {
                     console.log(data);
                     /*$.each(data.result.files, function (index, file) {

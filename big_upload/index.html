@@ -16,9 +16,8 @@
         $(function () {
             $('#fileupload').fileupload({
                 dataType: 'json',
-                maxChunkSize: 100,
+                // maxChunkSize: 100,
                 multipart: false,
-                // forceIframeTransport: 'true', // not sure about this one
                 done: function (e, data) {
                     console.log(data);
                     /*$.each(data.result.files, function (index, file) {
