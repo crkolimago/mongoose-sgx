@@ -17,7 +17,7 @@
             $('#fileupload').fileupload({
                 dataType: 'json',
                 // multipart: false,
-                maxChunkSize: 1000,
+                maxChunkSize: 10000,
                 done: function (e, data) {
                     $.each(data.result.files, function (index, file) {
                         $('<p/>').text(file.name).appendTo(document.body);

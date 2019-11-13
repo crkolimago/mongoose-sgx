@@ -10,11 +10,15 @@
 - run `live-server` in frontend/
 
 ### Step 3.
-- [ ] processing large multipart data
-- potential avenue https://github.com/blueimp/jQuery-File-Upload/wiki/Basic-plugin
+- [ ] setup https://github.com/blueimp/jQuery-File-Upload/wiki/Basic-plugin
+
+
+### Notes: 
+- Able to do multipart requests but not handle content-range
+
 
 ### Issues:
-- Servicing get requests without file system is too advances -- using node fronten
+- Content-Disposition: 
 
 ### Compile flags
 

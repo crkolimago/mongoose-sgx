@@ -75,7 +75,7 @@ static void handle_upload(struct mg_connection *nc, int ev, void *p) {
         mg_send_response_line(nc, 200, NULL);
         mg_printf(nc, "%s",
                   "Access-Control-Allow-Origin: *\r\n"
-                  "Access-Control-Allow-Headers: content-disposition,content-type\r\n"
+                  "Access-Control-Allow-Headers: content-disposition,content-type, content-range\r\n"
                   "Connection: close\r\n"
                   "Allow: GET, POST, HEAD, CONNECT, OPTIONS"
                   "\r\n\r\n");
