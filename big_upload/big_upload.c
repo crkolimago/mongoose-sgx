@@ -9,11 +9,6 @@
 #include <stdlib.h>
 #include "mongoose.h"
 
-#define FILE_OK 0
-#define FILE_NOT_EXIST 1
-#define FILE_TO_LARGE 2
-#define FILE_READ_ERROR 3
-
 static const char *s_http_port = "8000";
 
 struct file_writer_data {
@@ -75,12 +70,23 @@ static void handle_upload(struct mg_connection *nc, int ev, void *p) {
         mg_send_response_line(nc, 200, NULL);
         mg_printf(nc, "%s",
                   "Access-Control-Allow-Origin: *\r\n"
-                  "Access-Control-Allow-Headers: content-disposition,content-type, content-range\r\n"
+                  "Access-Control-Allow-Headers: content-disposition, content-type, content-range\r\n"
                   "Connection: close\r\n"
                   "Allow: GET, POST, HEAD, CONNECT, OPTIONS"
                   "\r\n\r\n");
         nc->flags |= MG_F_SEND_AND_CLOSE;
       }
+      break;
+    }
+    case MG_EV_HTTP_MULTIPART_REQUEST: {
+      struct mg_str *hdr = mg_get_http_header(hm, "Content-Range");
+      printf("%.*s\n", (int)hdr->len, hdr->p);
+      // this is where processing of content range should go and 
+      // multipart struct should be extended to accept this value
+      // Example: "Content-Range: bytes #####-#####/#####"
+      // relevant methods:
+      // mg_http_parse_range_header (filesystem dependent)
+
       break;
     }
     case MG_EV_HTTP_PART_BEGIN: {
@@ -93,7 +99,8 @@ static void handle_upload(struct mg_connection *nc, int ev, void *p) {
       break;
     }
     case MG_EV_HTTP_PART_DATA: {
-      // this is where the actual data is processed
+      // this is where the actual data is processed and
+      // image would be reconstructed
 
       printf("data_length: %ld\n", mp->data.len);
       data->bytes_written += mp->data.len;
@@ -101,6 +108,10 @@ static void handle_upload(struct mg_connection *nc, int ev, void *p) {
       break;
     }
     case MG_EV_HTTP_PART_END: {
+      // this is an example of what the jQuery file upload
+      // expects after it is finished processing but I am unsure
+      // about what it expects after each multipart portion however
+      // this works
       mg_printf(nc,
       "HTTP/1.1 200 OK\r\n"
       "Access-Control-Allow-Origin: *\r\n"
@@ -122,8 +133,6 @@ static void handle_upload(struct mg_connection *nc, int ev, void *p) {
     }
   }
 }
-
-// look at mg_http_parse_range_header
 
 static void ev_handler(struct mg_connection *nc, int ev, void *ev_data) {
   if (ev == MG_EV_HTTP_REQUEST) {
