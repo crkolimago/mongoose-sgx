@@ -34,7 +34,7 @@
         $(function () {
             $('#fileupload').fileupload({
                 dataType: 'json',
-                maxChunkSize: 100000,
+                maxChunkSize: 500000,
                 add: function (e, data) {
                     data.context = $('<button/>').text('Upload')
                         .appendTo(document.body)

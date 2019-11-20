@@ -1,24 +1,14 @@
 # mongoose-sgx
 
-### Step 1.
-- [x] get big upload working without filesystem but with http multipart support
-- ~~test using `curl -F data=@file.txt localhost:8000/upload`~~
-- simple upload endpoint form working (open localhost:8000 in browser)
+### Run Client
+`frontend$ live-server`
 
-### Step 2.
-- [x] configure axios for get and post
-- run `live-server` in frontend/
+### Run Server
+`big_upload$ ./big_upload`
 
-### Step 3.
-- [ ] setup https://github.com/blueimp/jQuery-File-Upload/wiki/Basic-plugin
-
-
-### Notes: 
-- Able to do multipart requests but not handle content-range
-
-
-### Issues:
-- Content-Disposition: 
+### TODO: 
+- Handle filename processing
+- Handle cryptographic no-op
 
 ### Compile flags
 
