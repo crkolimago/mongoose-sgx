@@ -130,3 +130,8 @@ dist
 
 # TernJS port file
 .tern-port
+
+# random data files
+
+mb_file.txt
+gb_file.txt
